@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explorador de Ángulo del Centro e Inscrito</title>
+  <style>
+    .arco-geom {
+      display: inline-block;
+      position: relative;
+      padding: 0 2px;
+    }
+    .arco-geom::before {
+      content: "";
+      position: absolute;
+      top: -2px;
+      left: 1px;
+      right: 1px;
+      height: 4px;
+      border-top: 2px solid currentColor;
+      border-radius: 50% 50% 0 0;
+    }
+    .lbl-tag {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      pointer-events: none;
+      user-select: none;
+    }
+    .bg-tag {
+      pointer-events: none;
+      rx: 4px;
+      ry: 4px;
+    }
+  </style>
+</head>
+<body style="margin: 0; background-color: #ffffff;">
+
+<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 850px; margin: 0 auto; padding: 16px; color: #22252a;">
+  
+  <!-- Encabezado Teórico -->
+  <header style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+    <h2 style="margin-top: 0; color: #1e293b; font-size: 1.35rem; display: flex; align-items: center; gap: 8px;">
+      📐 Explorador: Ángulo del Centro, Ángulo Inscrito y Arco Comprendido
+    </h2>
+    <p style="margin: 8px 0; color: #475569; font-size: 0.95rem; line-height: 1.5;">
+      <strong>¿Qué estamos probando?</strong> Todo ángulo del centro (∠AOB) mide exactamente lo mismo que la medida angular del <strong>arco comprendido</strong> (<span class="arco-geom">AB</span>). A su vez, el ángulo inscrito (∠ACB) que subtiende ese mismo arco siempre medirá exactamente la <strong>mitad</strong> del ángulo del centro.
+    </p>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; font-size: 0.88rem;">
+      <span style="background: #eff6ff; color: #1d4ed8; padding: 6px 10px; border-radius: 6px; border: 1px solid #bfdbfe;">
+        🔵 <strong>Ángulo del centro (∠AOB):</strong> Vértice en el centro O.
+      </span>
+      <span style="background: #fef2f2; color: #b91c1c; padding: 6px 10px; border-radius: 6px; border: 1px solid #fecaca;">
+        🔴 <strong>Ángulo inscrito (∠ACB):</strong> Vértice sobre la circunferencia.
+      </span>
+      <span style="background: #fff7ed; color: #c2410c; padding: 6px 10px; border-radius: 6px; border: 1px solid #ffedd5;">
+        🟠 <strong>Arco Comprendido (<span class="arco-geom">AB</span>):</strong> Porción destacada de la circunferencia.
+      </span>
+    </div>
+  </header>
+
+  <!-- Panel Principal: Gráfico + Medidas -->
+  <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: stretch; margin-bottom: 24px;">
+    
+    <!-- SVG Interactivo -->
+    <div style="flex: 1 1 340px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+      <svg id="csvg" viewBox="0 0 360 360" width="100%" style="touch-action: none; cursor: grab; max-width: 360px;">
+        <!-- Circunferencia completa -->
+        <circle cx="180" cy="180" r="110" fill="none" stroke="#cbd5e1" stroke-width="2.5"></circle>
+        
+        <!-- Arco Comprendido Resaltado -->
+        <path id="arcAB" fill="none" stroke="#f97316" stroke-width="6" stroke-linecap="round"></path>
+        
+        <!-- Ángulo del Centro -->
+        <line id="OA" stroke="#2563eb" stroke-width="2"></line>
+        <line id="OB" stroke="#2563eb" stroke-width="2"></line>
+        <path id="angO" fill="none" stroke="#2563eb" stroke-width="2"></path>
+        
+        <!-- Ángulo Inscrito -->
+        <line id="CA" stroke="#dc2626" stroke-dasharray="4,4" stroke-width="2"></line>
+        <line id="CB" stroke="#dc2626" stroke-dasharray="4,4" stroke-width="2"></line>
+        <path id="angC" fill="none" stroke="#dc2626" stroke-width="2"></path>
+        
+        <!-- Centro O -->
+        <circle cx="180" cy="180" r="4" fill="#0f172a"></circle>
+        <text x="186" y="194" fill="#0f172a" font-weight="bold" font-size="14">O</text>
+        
+        <!-- ETIQUETAS MÓVILES SOBRE LA FIGURA -->
+        <!-- Medida del Arco (Naranja) -->
+        <g id="tagArcGroup">
+          <rect id="bgArc" class="bg-tag" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5" width="68" height="20"></rect>
+          <text id="lblArc" class="lbl-tag" fill="#c2410c" text-anchor="middle" dominant-baseline="central">100°</text>
+        </g>
+
+        <!-- Medida Ángulo del Centro (Azul) -->
+        <g id="tagCentralGroup">
+          <rect id="bgCentral" class="bg-tag" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5" width="46" height="20"></rect>
+          <text id="lblCentral" class="lbl-tag" fill="#1e40af" text-anchor="middle" dominant-baseline="central">100°</text>
+        </g>
+
+        <!-- Medida Ángulo Inscrito (Rojo) -->
+        <g id="tagInscGroup">
+          <rect id="bgInsc" class="bg-tag" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5" width="52" height="20"></rect>
+          <text id="lblInsc" class="lbl-tag" fill="#991b1b" text-anchor="middle" dominant-baseline="central">50.0°</text>
+        </g>
+
+        <!-- Arrastrables A, B, C -->
+        <circle id="hA" r="11" fill="#2563eb" stroke="#ffffff" stroke-width="2" style="cursor:grab; filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.2));"></circle>
+        <circle id="hB" r="11" fill="#2563eb" stroke="#ffffff" stroke-width="2" style="cursor:grab; filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.2));"></circle>
+        <circle id="hC" r="11" fill="#dc2626" stroke="#ffffff" stroke-width="2" style="cursor:grab; filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.2));"></circle>
+        
+        <!-- Nombres de Puntos -->
+        <text id="lA" fill="#1e293b" font-weight="bold" font-size="14"></text>
+        <text id="lB" fill="#1e293b" font-weight="bold" font-size="14"></text>
+        <text id="lC" fill="#1e293b" font-weight="bold" font-size="14"></text>
+      </svg>
+      <div style="font-size: 0.85rem; color: #64748b; margin-top: 8px;">
+        👆 <strong>Arrastra A, B o C</strong>: El centro y arco son enteros, el inscrito varía de 0.5 en 0.5.
+      </div>
+    </div>
+
+    <!-- Panel de Valores y Relación -->
+    <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 12px;">
+      
+      <div style="background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 8px; padding: 12px 16px;">
+        <div style="font-size: 0.85rem; color: #1e40af; font-weight: 600;">Ángulo del Centro (∠AOB) y Arco (<span class="arco-geom">AB</span>)</div>
+        <div id="centralVal" style="font-size: 1.8rem; font-weight: 700; color: #1e3a8a;">100°</div>
+      </div>
+
+      <div style="background: #fef2f2; border-left: 4px solid #dc2626; border-radius: 8px; padding: 12px 16px;">
+        <div style="font-size: 0.85rem; color: #991b1b; font-weight: 600;">Ángulo Inscrito (∠ACB)</div>
+        <div id="inscVal" style="font-size: 1.8rem; font-weight: 700; color: #7f1d1d;">50.0°</div>
+      </div>
+
+      <div id="relBadge" style="padding: 12px; border-radius: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-size: 0.9rem; line-height: 1.4;">
+        <strong>Relación confirmada:</strong><br>
+        <span id="relText">Ángulo Inscrito (∠ACB) = ½ · Ángulo del Centro (∠AOB)</span>
+      </div>
+
+      <div style="background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 12px; font-size: 0.85rem; color: #6b21a8; line-height: 1.4;">
+        💡 <strong>Observación pedagógica:</strong> Mueve el punto <strong>C</strong> a lo largo de la circunferencia sin mover A ni B. ¡Comprobarás que la medida en C permanece idéntica!
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección de Desafíos Prácticos -->
+  <section style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+    <h3 style="margin-top: 0; color: #0f172a; font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between;">
+      <span>🎯 Desafío Práctico</span>
+      <span id="scoreText" style="font-size: 0.9rem; font-weight: normal; color: #475569; background: #f1f5f9; padding: 4px 12px; border-radius: 20px;">Aciertos: 0/0</span>
+    </h3>
+
+    <div id="problemText" style="font-size: 1rem; color: #334155; margin-bottom: 16px; font-weight: 500;">
+      Cargando desafío...
+    </div>
+
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+      <input type="number" step="0.5" id="answerInput" placeholder="Tu respuesta" style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; width: 160px; outline: none;">
+      <button id="checkBtn" style="padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer;">Comprobar</button>
+      <button id="nextBtn" style="padding: 8px 16px; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; cursor: pointer;">Siguiente Desafío</button>
+    </div>
+
+    <div id="feedback" style="margin-top: 12px; font-size: 0.9rem; font-weight: 500; min-height: 24px;"></div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var svg = document.getElementById('csvg');
+  var cx = 180, cy = 180, R = 110;
+  var angA = 240, angB = 20, angC = 120;
+  var dragging = null;
+
+  function norm(a){ return ((a % 360) + 360) % 360; }
+  
+  function polar(r, deg, center){
+    center = center || {x: cx, y: cy};
+    var rad = deg * Math.PI / 180;
+    return { x: center.x + r * Math.cos(rad), y: center.y + r * Math.sin(rad) };
+  }
+
+  function arcPath(r, startDeg, sweepDeg, center){
+    center = center || {x: cx, y: cy};
+    var s = polar(r, startDeg, center);
+    var e = polar(r, startDeg + sweepDeg, center);
+    var large = sweepDeg > 180 ? 1 : 0;
+    return 'M ' + s.x + ' ' + s.y + ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' + e.x + ' ' + e.y;
+  }
+
+  function updateTag(bgId, lblId, valText, x, y, bgW, bgH){
+    var lbl = document.getElementById(lblId);
+    var bg = document.getElementById(bgId);
+    lbl.textContent = valText;
+    lbl.setAttribute('x', x);
+    lbl.setAttribute('y', y);
+    bg.setAttribute('width', bgW);
+    bg.setAttribute('height', bgH);
+    bg.setAttribute('x', x - bgW / 2);
+    bg.setAttribute('y', y - bgH / 2);
+  }
+
+  function render(){
+    var A = polar(R, angA);
+    var B = polar(R, angB);
+    var C = polar(R, angC);
+
+    var arcIncr = norm(angB - angA);
+    var cOffset = norm(angC - angA);
+    var startDeg, sweepDeg;
+
+    if (cOffset < arcIncr){
+      startDeg = angB;
+      sweepDeg = 360 - arcIncr;
+    } else {
+      startDeg = angA;
+      sweepDeg = arcIncr;
+    }
+
+    document.getElementById('arcAB').setAttribute('d', arcPath(R, startDeg, sweepDeg));
+    document.getElementById('angO').setAttribute('d', arcPath(28, startDeg, sweepDeg));
+
+    var OA = document.getElementById('OA'), OB = document.getElementById('OB');
+    OA.setAttribute('x1', cx); OA.setAttribute('y1', cy); OA.setAttribute('x2', A.x); OA.setAttribute('y2', A.y);
+    OB.setAttribute('x1', cx); OB.setAttribute('y1', cy); OB.setAttribute('x2', B.x); OB.setAttribute('y2', B.y);
+
+    var CA = document.getElementById('CA'), CB = document.getElementById('CB');
+    CA.setAttribute('x1', C.x); CA.setAttribute('y1', C.y); CA.setAttribute('x2', A.x); CA.setAttribute('y2', A.y);
+    CB.setAttribute('x1', C.x); CB.setAttribute('y1', C.y); CB.setAttribute('x2', B.x); CB.setAttribute('y2', B.y);
+
+    var a1 = Math.atan2(A.y - C.y, A.x - C.x) * 180 / Math.PI;
+    var a2 = Math.atan2(B.y - C.y, B.x - C.x) * 180 / Math.PI;
+    var sweepC = norm(a1 - a2), startC = a2;
+    if (sweepC > 180){
+      sweepC = norm(a2 - a1);
+      startC = a1;
+    }
+
+    document.getElementById('angC').setAttribute('d', arcPath(24, startC, sweepC, C));
+
+    var hA = document.getElementById('hA'), hB = document.getElementById('hB'), hC = document.getElementById('hC');
+    hA.setAttribute('cx', A.x); hA.setAttribute('cy', A.y);
+    hB.setAttribute('cx', B.x); hB.setAttribute('cy', B.y);
+    hC.setAttribute('cx', C.x); hC.setAttribute('cy', C.y);
+
+    var lA = document.getElementById('lA'), lB = document.getElementById('lB'), lC = document.getElementById('lC');
+    lA.setAttribute('x', A.x + (A.x > cx ? 12 : -22)); lA.setAttribute('y', A.y + (A.y > cy ? 18 : -8)); lA.textContent = 'A';
+    lB.setAttribute('x', B.x + (B.x > cx ? 12 : -22)); lB.setAttribute('y', B.y + (B.y > cy ? 18 : -8)); lB.textContent = 'B';
+    lC.setAttribute('x', C.x + (C.x > cx ? 12 : -22)); lC.setAttribute('y', C.y + (C.y > cy ? 18 : -8)); lC.textContent = 'C';
+
+    // --- REDONDEO A PASOS DE 0.5 PARA EL INSCRITO Y ENTERO PARA EL CENTRO ---
+    var inscribedNum = Math.round(sweepC * 2) / 2;
+    var centralNum = Math.round(inscribedNum * 2);
+
+    var centValText = centralNum + '°';
+    var inscValText = inscribedNum.toFixed(1) + '°';
+
+    // 1. Etiqueta del Arco Comprendido (Entero)
+    var midArcDeg = startDeg + sweepDeg / 2;
+    var posArc = polar(R + 22, midArcDeg);
+    updateTag('bgArc', 'lblArc', 'Arco: ' + centValText, posArc.x, posArc.y, 72, 20);
+
+    // 2. Etiqueta del Ángulo del Centro (Entero)
+    var posCentral = polar(48, midArcDeg);
+    updateTag('bgCentral', 'lblCentral', centValText, posCentral.x, posCentral.y, 48, 20);
+
+    // 3. Etiqueta del Ángulo Inscrito (1 Decimal, pasos de 0.5)
+    var midInscDeg = startC + sweepC / 2;
+    var posInsc = polar(44, midInscDeg, C);
+    updateTag('bgInsc', 'lblInsc', inscValText, posInsc.x, posInsc.y, 52, 20);
+
+    // Actualización del panel lateral
+    document.getElementById('centralVal').textContent = centValText;
+    document.getElementById('inscVal').textContent = inscValText;
+
+    var relText = document.getElementById('relText');
+    relText.innerHTML = '<strong>' + inscValText + '</strong> (inscrito) es exactamente la mitad de <strong>' + centValText + '</strong> (centro o arco).';
+  }
+
+  function svgPoint(evt){
+    var pt = svg.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  }
+
+  function startDrag(which){
+    return function(evt){
+      dragging = which;
+      evt.target.setPointerCapture(evt.pointerId);
+    };
+  }
+
+  document.getElementById('hA').addEventListener('pointerdown', startDrag('A'));
+  document.getElementById('hB').addEventListener('pointerdown', startDrag('B'));
+  document.getElementById('hC').addEventListener('pointerdown', startDrag('C'));
+
+  svg.addEventListener('pointermove', function(evt){
+    if(!dragging) return;
+    var p = svgPoint(evt);
+    var deg = norm(Math.atan2(p.y - cy, p.x - cx) * 180 / Math.PI);
+    if (dragging === 'A') angA = deg;
+    else if (dragging === 'B') angB = deg;
+    else angC = deg;
+    render();
+  });
+
+  svg.addEventListener('pointerup', function(){ dragging = null; });
+  svg.addEventListener('pointerleave', function(){ dragging = null; });
+
+  render();
+
+  // Sistema de Ejercicios
+  var current = null, correct = 0, total = 0;
+
+  function newProblem(){
+    var types = ['centralToInsc', 'inscToCentral', 'arcToInsc'];
+    var type = types[Math.floor(Math.random() * types.length)];
+    // Múltiplo entero para el centro/arco
+    var val = 30 + Math.floor(Math.random() * 120); 
+
+    if (type === 'centralToInsc'){
+      var ans = Number((val / 2).toFixed(1));
+      current = { answer: ans, exp: 'El ángulo inscrito es la mitad del ángulo del centro: ' + val + '° / 2 = ' + ans.toFixed(1) + '°.' };
+      document.getElementById('problemText').innerHTML = 'Un ángulo del centro (∠AOB) mide <strong>' + val + '°</strong>. ¿Cuánto mide el ángulo inscrito (∠ACB) que subtiende el mismo arco?';
+    } else if (type === 'inscToCentral') {
+      var inscVal = Number((val / 2).toFixed(1));
+      var ans = val;
+      current = { answer: ans, exp: 'El ángulo del centro mide el doble del ángulo inscrito: ' + inscVal.toFixed(1) + '° × 2 = ' + ans + '°.' };
+      document.getElementById('problemText').innerHTML = 'Un ángulo inscrito (∠ACB) mide <strong>' + inscVal.toFixed(1) + '°</strong>. ¿Cuánto mide el ángulo del centro (∠AOB) correspondiente?';
+    } else {
+      var ans = Number((val / 2).toFixed(1));
+      current = { answer: ans, exp: 'El arco subtendido mide lo mismo que el ángulo del centro (' + val + '°). Por tanto, el ángulo inscrito mide la mitad: ' + ans.toFixed(1) + '°.' };
+      document.getElementById('problemText').innerHTML = 'El arco comprendido (<span class="arco-geom">AB</span>) mide <strong>' + val + '°</strong>. ¿Cuál es la medida del ángulo inscrito (∠ACB)?';
+    }
+
+    document.getElementById('answerInput').value = '';
+    document.getElementById('feedback').textContent = '';
+  }
+
+  function checkAnswer(){
+    var input = document.getElementById('answerInput');
+    var fb = document.getElementById('feedback');
+    if (input.value === '' || isNaN(Number(input.value))){
+      fb.style.color = '#dc2626';
+      fb.textContent = 'Por favor, ingresa un número válido.';
+      return;
+    }
+    total++;
+    var val = Number(input.value);
+    if (Math.abs(val - current.answer) <= 0.1){
+      correct++;
+      fb.style.color = '#16a34a';
+      fb.textContent = '¡Correcto! 🎉 ' + current.exp;
+    } else {
+      fb.style.color = '#dc2626';
+      fb.textContent = 'Incorrecto. 💡 ' + current.exp;
+    }
+    document.getElementById('scoreText').textContent = 'Aciertos: ' + correct + '/' + total;
+  }
+
+  document.getElementById('checkBtn').addEventListener('click', checkAnswer);
+  document.getElementById('nextBtn').addEventListener('click', newProblem);
+  document.getElementById('answerInput').addEventListener('keydown', function(e){ if(e.key === 'Enter') checkAnswer(); });
+
+  newProblem();
+})();
+</script>
+</body>
+</html>
